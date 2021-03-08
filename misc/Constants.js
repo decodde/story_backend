@@ -20,7 +20,26 @@ const Constants = {
     EMPTY_STORY : "No story yet, if you are the creator please do update" ,
     STORY_CREATION_FAILED : "Failed to create story",
     STORY_CREATION_SUCCESS : "Story created successfully",
-    NO_TITLE : "No title here"
+    NO_TITLE : "No title here",
+    OFFICIAL_EMAIL : "notifications@story.com",
+    APP_NAME : "story",
+    EMAIL : {
+        NEW_STORY : async (title,id) => {
+            return {
+                subject : "NEW STORY CREATED",
+                body : `Awesome you just created a new story; ${title}. `
+            }
+        },
+        SIGNUP : async (username)  => {
+            return {
+                subject : `Welcome ${username}`,
+                body : `Welcome to ${Constants.APP_NAME}. Join us in adding value as acreative with your imaginations, experiences and beliefs`,
+            }
+        }
+    },
+    EMAIL_SENT_SUCCESS : "Email sent successfully",
+    EMAIL_SENT_FAIL : "Error sending email",
+    EMAIL_INVALID : "Email could not be sent, Email invalid?"
 }
 
 exports.Constants = Constants;

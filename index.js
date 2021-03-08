@@ -21,10 +21,13 @@ app.use(function (req, res, next) {
 
 app.post("/api/login",Router.login);
 app.post("/api/onboard",Router.onboard);
+app.post("/api/user/get",Router.user.get);
 app.post("/api/story/delete", Router.story.delete);
 app.post("/api/story/get", Router.story.get);
-app.post("/api/story/save", Router.story.create);
-app.post("/api/story/stories", Router.story.myStories)
+app.post("/api/story/create", Router.story.create);
+app.post("/api/story/myStories", Router.story.myStories)
+app.post("/api/story/stories/all/light", Router.story.stories.light);
+app.post("/api/story/stories/all/detailed", Router.story.stories.detailed);
 
 app.get("/api/login",(req,res)=> res.json({type:"(^__^) hey there"}));
 app.get("*",Router.nothing);
