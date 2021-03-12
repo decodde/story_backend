@@ -39,7 +39,9 @@ const Constants = {
     },
     EMAIL_SENT_SUCCESS : "Email sent successfully",
     EMAIL_SENT_FAIL : "Error sending email",
-    EMAIL_INVALID : "Email could not be sent, Email invalid?"
+    EMAIL_INVALID : "Email could not be sent, Email invalid ?",
+    PROFILE_RETRIEVAL_FAIL : "Could not retrieve profile",
+    PROFILE_RETRIEVAL_SUCCESS : "Profile retrieved successfully"
 }
 
 exports.Constants = Constants;

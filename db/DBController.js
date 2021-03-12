@@ -295,7 +295,7 @@ const DBController = {
             }
         },
         all : {
-            light : async () => {
+            light : async (perPage) => {
                 try {
                     var _req = await Story.find({_id : 0,content: 0});
                     return Response.success(Constants.STORY_RETRIEVAL_SUCCESS, _req);
@@ -305,7 +305,7 @@ const DBController = {
                     return Response.error(Constants.DB_ERROR, e);
                 }
             },
-            detailed : async () => {
+            detailed : async (perPage ) => {
                 try {
                     var _req = await Story.find();
                     return Response.success(Constants.STORY_RETRIEVAL_SUCCESS, _req);

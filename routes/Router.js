@@ -14,7 +14,25 @@ var Router = {
     },
     user : {
         get : async (req,res) => {
-
+            var { authorization } = req.headers;
+            var verify = await DBController.misc.verifyApiKey(authorization);
+            if (verify.type == "success") {
+                var {username} = req.body;
+                res.json(await DBController.user.get(username))
+            }
+            else {
+                res.json(Response.error(Constants.PROFILE_RETRIEVAL_FAIL,Constants.AUTH_FAILED));
+            }
+        },
+        myProfile : async (req,res) => {
+            var { authorization } = req.headers;
+            var verify = await DBController.misc.verifyApiKey(authorization);
+            if (verify.type == "success") {
+                res.json(await DBController.user.get(verify.username))
+            }
+            else {
+                res.json(Response.error(Constants.PROFILE_RETRIEVAL_FAIL,Constants.AUTH_FAILED));
+            }
         }
     },
     story: {
@@ -56,10 +74,12 @@ var Router = {
         },
         stories : {
             light : async (req,res) => {
-                res.json(await DBController.story.all.light);
+                var {perPage} = req.body;
+                res.json(await DBController.story.all.light(perPage));
             },
             detailed : async () => {
-                res.json(await DBController.story.all.detailed);
+                var {perPage} = req.body;
+                res.json(await DBController.story.all.detailed(perPage));
             }
         }
     },
