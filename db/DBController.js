@@ -3,6 +3,7 @@ const { Constants } = require("../misc/Constants");
 var mongoose = require('mongoose');
 const crypt = require("crypto");
 const nodemailer = require("nodemailer");
+const { REFUSED } = require("dns");
 
 var transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -40,7 +41,7 @@ const DBController = {
     misc: {
         generateStoryId: async (storyName) => {
             try {
-                var mykey = crypt.createCipheriv('aes-256-gcm', "id");
+                var mykey = crypt.createCipher('aes-256-gcm', "id",null);
                 var mystr = mykey.update(storyName, 'utf8', 'hex');
                 mystr += mykey.final('hex');
                 return mystr;
@@ -77,7 +78,7 @@ const DBController = {
         },
         decodeStoryId: async (id) => {
             try {
-                var mykey = crypt.createDecipher('aes-128-cbc', "id");
+                var mykey = crypt.createDecipher('aes-128-cbc', "id",null);
                 var mystr = mykey.update(id, 'hex', 'utf8')
                 mystr += mykey.final('utf8');
                 return mystr
@@ -89,7 +90,7 @@ const DBController = {
         },
         decodeApiKey: async (apiKey) => {
             try {
-                var mykey = crypt.createDecipher('aes-128-cbc', Constants.SALT);
+                var mykey = crypt.createDecipher('aes-128-cbc', Constants.SALT,null);
                 var mystr = mykey.update(apiKey, 'hex', 'utf8')
                 mystr += mykey.final('utf8');
                 return mystr
@@ -109,7 +110,7 @@ const DBController = {
         },
         generateApiKey: async (username) => {
             try {
-                var mykey = crypt.createCipheriv('aes-128-cbc', Constants.SALT);
+                var mykey = crypt.createCipher('aes-128-cbc', Constants.SALT,null);
                 var mystr = mykey.update(username, 'utf8', 'hex');
                 mystr += mykey.final('hex');
                 return mystr;
@@ -120,13 +121,16 @@ const DBController = {
             }
         },
         hashPassword: async (password) => {
+            //console.log(password);
             try {
-                var mykey = crypt.createCipheriv('aes-128-cbc', Constants.SALT);
+                var mykey = crypt.createCipher('aes-128-cbc', Constants.SALT,password);
+                //console.log(mykey)
                 var mystr = mykey.update(password, 'utf8', 'hex');
                 mystr += mykey.final('hex');
                 return mystr;
             }
             catch (e) {
+                //console.log(e);
                 console.log(e.code);
                 return null;
             }
@@ -207,10 +211,18 @@ const DBController = {
             if (_req == null) {
                 return Response.error(Constants.USERNAME_NOT_EXISTS);
             }
-            else return Response.success(Constants.USERNAME_EXISTS);
+            else {
+                var u = {
+                    name : _req.name,
+                    username : _req.username
+                }
+                return Response.success(Constants.USERNAME_EXISTS,u);
+            }
         },
         login: async (username, password) => {
-            var _req = await User.findOne({ username: username });
+            var _req = await User.findOne({$or : [{username : username},{email : username}]});
+            //console.log(_req);
+            //console.log(username," :.....: ",password);
             if (_req != null) {
                 var hashPwd = await DBController.misc.hashPassword(password);
                 if (_req.password == hashPwd) {
@@ -230,6 +242,18 @@ const DBController = {
         search : async () => {
 
         },
+        newArrivals : async () => {
+            var milli_seconds_in_a_week = (((60 * 60) * 24) * 7 ) * 1000;
+            var sinceDate = new Date((new Date() - milli_seconds_in_a_week));
+            try {
+                var _req = await Story.find({created : { $gt : sinceDate }});
+                return Response.success(Constants.STORY_RETRIEVAL_SUCCESS,_req);
+            }
+            catch(e){
+                console.log(e);
+                return Response.error(Constants.DB_ERROR);
+            }
+        },
         myStories: async (currentUser, user) => {
             try {
                 var stories = await Story.find({ by: user });
@@ -240,17 +264,20 @@ const DBController = {
                 return Response.error(Constants.DB_ERROR);
             }
         },
-        create: async (user, storyDetails) => {
-            var { visibility, content, title } = storyDetails;
+        create: async (userDetails, storyDetails) => {
+            var { visibility, content, title, author } = storyDetails;
+            var {name,user} = userDetails;
             visibility ? ((visibility == "public" || visibility == "private") ? visibility : visibility = "public" ) : visibility = "public";
             content ? content : content = Constants.EMPTY_STORY;
             if (title) {
                 var storyId = await DBController.misc.generateStoryId(title);
+                author ? author = author : author = name;
                 var _story = new Story();
                 _story.visibility = visibility;
                 _story.content = content;
                 _story.title = title;
                 _story.id = storyId;
+                _story.author = author;
                 _story.by = user;
                 _story.created = new Date();
                 _story.lastEdited = new Date();
@@ -335,7 +362,7 @@ const DBController = {
                 else {
                     try {
                         var _req = await Story.deleteOne({ id: id });
-                        console.log(_req);
+                        //console.log(_req);
                         return Response.success(Constants.STORY_DELETE_SUCCESS);
                     }
                     catch (e) {

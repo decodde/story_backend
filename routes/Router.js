@@ -36,6 +36,9 @@ var Router = {
         }
     },
     story: {
+        newArrivals : async (req,res) => {
+            res.json(await DBController.story.newArrivals());
+        },
         delete: async (req, res) => {
             var { authorization } = req.headers;
             var verify = await DBController.misc.verifyApiKey(authorization);
@@ -60,7 +63,7 @@ var Router = {
             var { authorization } = req.headers;
             var verify = await DBController.misc.verifyApiKey(authorization);
             if (verify.type == "success") {
-                res.json(await DBController.story.create(verify.username, req.body))
+                res.json(await DBController.story.create(verify.data, req.body))
             }
             else {
                 res.json(Response.error(Constants.STORY_CREATION_FAILED,Constants.AUTH_FAILED));

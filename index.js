@@ -26,6 +26,7 @@ app.post("/api/story/delete", Router.story.delete);
 app.post("/api/story/get", Router.story.get);
 app.post("/api/story/create", Router.story.create);
 app.post("/api/story/myStories", Router.story.myStories)
+app.post("/api/story/newArrivals", Router.story.newArrivals),
 app.post("/api/story/stories/all/light", Router.story.stories.light);
 app.post("/api/story/stories/all/detailed", Router.story.stories.detailed);
 
